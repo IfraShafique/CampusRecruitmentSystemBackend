@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 
 const StudentRegSchema = new mongoose.Schema({
-    StudentID: String,
+    StudentID: { type: String, unique: true }, 
     StudentName: String,
     Email: String,
     Password: String,
@@ -12,5 +12,7 @@ const StudentRegSchema = new mongoose.Schema({
 
 
 const StuRegistrationModel = mongoose.model('Student', StudentRegSchema);
+
+
 module.exports = StuRegistrationModel;
 
