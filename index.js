@@ -54,7 +54,7 @@ const cloudinaryStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'Resumes', // Change this to your desired folder name
-      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'], // Define allowed file formats
+      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'], // Define allowed file formats
       unique_filename: true,
     },
 });
@@ -87,6 +87,20 @@ app.post("/company", async(req, res) => {
         };
     })
 
+    // Get Data from Company API
+  app.get("/get-companies", async(req, res) => {
+    try{
+      const companies = await ComRegistrationModel.find();
+  
+      res.json({status: "success", data: companies});
+    }
+
+    catch (error) {
+      console.log("Error in company Fetching Data: ", error);
+      res.status(500).json({error: "Internal error for fetching company data"})
+    };
+  })
+
 
 // ****************** Student Registration Form *************************
 app.post("/studentreg", async (req, res) => {
@@ -102,7 +116,17 @@ app.post("/studentreg", async (req, res) => {
     }
   });
   
+app.get("/get-students", async(req, res) => {
+  try{
+    const students = await StuRegistrationModel.find();
 
+    res.json({status: "success", data: students});
+  }
+
+  catch(error) {
+    res.status(500).json({error: "Internal error in student fetching data"})
+  }
+})
 
 // ***************** Student Profile **********************
 
@@ -120,7 +144,6 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
         Name: req.body.Name,
         ContactNo: req.body.ContactNo,
         Address: req.body.Address,
-        Email: req.body.Email,
         Department: req.body.Department,
         CurrentSemester: req.body.CurrentSemester,
         CGPA: req.body.CGPA,
@@ -141,8 +164,19 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
       });
     }
   });
-  
 
+  app.get("/get-studentProfileData", async (req, res) => {
+
+    try{
+      const stuProfiles = await StudentProfileModel.find();
+      res.json({status: "success", data: stuProfiles });
+    }
+  
+    catch(error) {
+      res.status(500).json({error: "Internal error in student profile fetching data"})
+    }
+  })
+  
 
 // ******************Job Post Form*****************************
 
@@ -172,14 +206,32 @@ app.post('/post-job', async (req, res) => {
   });
   
 
-app.get("/get-image", async(req, res) => {
-    try{
-        StudentProfileModel.find({}).then((data) => {
-            res.send({status: "ok", data: data});
-        });
-    }catch (error) {
-        res.json({staus: "Internal Server Error"})
-    }
+  app.get("/get-Jobs", async (req, res) => {
+
+  try{
+    const posts = await JobPostModel.find();
+    res.json({status: "success", data: posts});
+  }
+
+  catch(error) {
+    res.status(500).json({error: "Internal error in job post fetching data"})
+  }
 })
+
+// Delete the job vacancy
+app.delete("/delete-job/:jobId", async(req, res) => {
+  try{
+    const jobId = req.params.jobId;
+
+    const deleteJob = await JobPostModel.findByIdAndDelete(jobId);
+    if (!deleteJob) {
+      return res.status(404).json({error: "Job not found"})
+    }
+
+    res.json({message: "Job deleted successfully"})
+  } catch(err) {
+    res.status(500).json({err:"Internal server error for job delete"})
+  }
+});
 
 app.listen(port, () => { console.log(`Server started on port ${port} http://localhost:4000`); });

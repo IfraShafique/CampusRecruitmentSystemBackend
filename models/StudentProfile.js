@@ -5,7 +5,6 @@ const StudentProfileSchema = new mongoose.Schema({
   Name: String,
   ContactNo: String,
   Address: String,
-  Email: String,
   Department: String,
   CurrentSemester: String,
   CGPA: String,

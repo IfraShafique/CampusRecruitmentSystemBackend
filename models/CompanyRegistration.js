@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const RegistrationSchema = new mongoose.Schema({
-LoginID: String,
+LoginID: { type: String, unique: true },
   CompanyName: String,
   Industry: String,
   HRName: String,
