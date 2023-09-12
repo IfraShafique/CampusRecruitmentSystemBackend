@@ -14,17 +14,6 @@ const app = express();
 app.use(express.json())
 app.use(cors())
 const port = 4000;
-
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//       cb(null, './ResumeUpload'); // Define the destination folder for uploaded files
-//     },
-//     filename: function (req, file, cb) {
-//       // Define how the uploaded file should be named
-//       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-//       cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop());
-//     }
-//   });
   
 
   console.log("MONGODB_URI:", process.env.MONGODB_URI);
@@ -101,6 +90,39 @@ app.post("/company", async(req, res) => {
     };
   })
 
+  // Fetch data by ID
+  app.get('/get-companies/:companyId', async (req, res) => {
+    try {
+      const companyId = req.params.companyId;
+      const company = await ComRegistrationModel.findById(companyId);
+      
+      if (!company) {
+        return res.status(404).json({ error: 'Company not found' });
+      }
+  
+      res.json({ status: 'success', data: company });
+    } catch (error) {
+      console.error('Error fetching company data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+  // Delete company Data
+  app.delete("/delete-company/:companyId", async(req, res) => {
+    try{
+      const companyId = req.params.companyId;
+  
+      const deleteCompany = await ComRegistrationModel.findByIdAndDelete(companyId);
+      if (!deleteCompany) {
+        return res.status(404).json({error: "Job not found"})
+      }
+  
+      res.json({message: "Job deleted successfully"})
+    } catch(err) {
+      res.status(500).json({err:"Internal server error for job delete"})
+    }
+  });
+
 
 // ****************** Student Registration Form *************************
 app.post("/studentreg", async (req, res) => {
@@ -116,6 +138,7 @@ app.post("/studentreg", async (req, res) => {
     }
   });
   
+// Fetch Company Data
 app.get("/get-students", async(req, res) => {
   try{
     const students = await StuRegistrationModel.find();
@@ -126,7 +149,9 @@ app.get("/get-students", async(req, res) => {
   catch(error) {
     res.status(500).json({error: "Internal error in student fetching data"})
   }
-})
+});
+
+
 
 // ***************** Student Profile **********************
 
@@ -177,6 +202,24 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
     }
   })
   
+  // Fetch company data by ID
+  app.get("/get-students/:studentId", async(req, res) => {
+
+  try{
+    const studentId = req.params.studentId;
+    const stuProfiles = await StudentProfileModel.findById(studentId)
+    .populate('Student');
+
+    if(!stuProfiles) {
+      res.status(400).json({error: "Internal server error for specific student data fetching"})
+    }
+    res.json({status: "success", data: stuProfiles});
+  }
+
+  catch(error) {
+    res.status(500).json({error: "Internal error in student fetching data"})
+  }
+});
 
 // ******************Job Post Form*****************************
 

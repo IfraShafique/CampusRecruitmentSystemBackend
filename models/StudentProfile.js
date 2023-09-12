@@ -10,7 +10,10 @@ const StudentProfileSchema = new mongoose.Schema({
   CGPA: String,
   Skills: String,
   resumePath: String,
-
+  studentRegistration: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student',
+  },
 }); 
 
 const StudentProfileModel = mongoose.model("StudentProfile", StudentProfileSchema);
