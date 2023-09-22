@@ -1,3 +1,4 @@
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const mongoose = require('mongoose'); // Correct
 const cors = require("cors");
@@ -5,19 +6,27 @@ const multer = require('multer'); // Require multer
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { v2: cloudinary } = require('cloudinary');
 const ComRegistrationModel = require('./models/CompanyRegistration');
-const StuRegistrationModel = require('./models/StudentRegistration');
+const UserRegistrationModel = require('./models/Registration');
 const StudentProfileModel = require('./models/StudentProfile');
 const JobPostModel = require('./models/JobPost');
+const bcryptjs = require('bcryptjs');
+const authenticate  = require('./Middleware/authentication');
+const bodyParser = require('body-parser');
+
 require('dotenv').config();
 
 const app = express();
-app.use(express.json())
-app.use(cors())
+app.use(cors({
+  origin: ["http://localhost:3000"],
+  method: ["GET","POST"],
+  credentials:true,
+}))
 const port = 4000;
-  
 
-  console.log("MONGODB_URI:", process.env.MONGODB_URI);
-
+// These method is used to get data from frontend
+app.use(express.json())
+app.use(express.urlencoded({extended : false}));
+app.use(cookieParser());
     mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
@@ -60,6 +69,18 @@ const upload = multer({
 });
  // Create an upload middleware
 
+//  **********Check The Role*************
+const checkUserRole = (role) => {
+  return (req, res, next) => {
+    // Assuming the user's role is stored in req.userRole
+    if (req.userRole === role) {
+      next(); // User has the required role, continue to the route handler
+    } else {
+      res.status(403).json({ message: 'Access denied' }); // User doesn't have the required role
+    }
+  };
+};
+
 // *************** Company Registration Form **********************
 // app.use('/company', companyRoutes);
 // route company
@@ -76,10 +97,31 @@ app.post("/company", async(req, res) => {
         };
     })
 
+    // Company panel by id
+    app.get("/company-panel/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("User ID from route parameters:", id);
+      
+      try {
+        const userData = await UserRegistrationModel.findById(id);
+        console.log(userData);
+        
+        if (!userData) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+    
+        res.json(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+    
+
     // Get Data from Company API
   app.get("/get-companies", async(req, res) => {
     try{
-      const companies = await ComRegistrationModel.find();
+      const companies = await UserRegistrationModel.find({Role: "company"});
   
       res.json({status: "success", data: companies});
     }
@@ -94,7 +136,7 @@ app.post("/company", async(req, res) => {
   app.get('/get-companies/:companyId', async (req, res) => {
     try {
       const companyId = req.params.companyId;
-      const company = await ComRegistrationModel.findById(companyId);
+      const company = await UserRegistrationModel.findById(companyId);
       
       if (!company) {
         return res.status(404).json({ error: 'Company not found' });
@@ -104,7 +146,7 @@ app.post("/company", async(req, res) => {
     } catch (error) {
       console.error('Error fetching company data:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-    }
+    } 
   });
   
   // Delete company Data
@@ -125,23 +167,44 @@ app.post("/company", async(req, res) => {
 
 
 // ****************** Student Registration Form *************************
-app.post("/studentreg", async (req, res) => {
+app.post("/registration", async (req, res) => {
     try {
+      const registration = {
+        LoginID: req.body.LoginID,
+        Name: req.body.Name,
+        Email: req.body.Email,
+        ContactNo: req.body.ContactNo,
+        Password: req.body.Password,
+        ConfirmPassword: req.body.ConfirmPassword,
+        Role: req.body.Role,
+        tokens: req.body.tokens,
+        studentProfile: req.body.studentProfile,
+        jobPost: req.body.jobPost,
+      };
       console.log('Received data:', req.body);
   
-      const student = await StuRegistrationModel.create(req.body);
-      console.log("Student Saved Data:", student);
-      res.json(student);
+      const user = await UserRegistrationModel.create(registration);
+      console.log("Registration Saved:", user);
+      const userData = await user.save();
+      res.json(userData);
+
+
+      
     } catch (err) {
-      console.log("Error in Student Registration:", err);
+      console.log("Error in Registration:", err);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
+
+  app.post('/registration-get' , async(req, res) => {
+    const getUserProfile = await UserRegistrationModel.find({_id:req.body._id}).populate('studentProfile')
+      res.json(getUserProfile)
+  })
   
-// Fetch Company Data
+// Fetch Student Data
 app.get("/get-students", async(req, res) => {
   try{
-    const students = await StuRegistrationModel.find();
+    const students = await UserRegistrationModel.find({Role: "student"});
 
     res.json({status: "success", data: students});
   }
@@ -155,7 +218,7 @@ app.get("/get-students", async(req, res) => {
 
 // ***************** Student Profile **********************
 
-app.post("/stuprofile", upload.single('resume'), async (req, res) => {
+app.post("/stuprofile",authenticate, upload.single('resume'), async (req, res) => {
     try {
       const resumeUrl = req.file.path; // Access the uploaded file via req.file
   
@@ -181,6 +244,26 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
       // Now you can use studentProfileData to save it to the database
       const studentProfile = await StudentProfileModel.create(studentProfileData);
       console.log("Student Profile Data Saved: ", studentProfile);
+      await studentProfile.save();
+
+      // Make a relationship
+      // const userId = req.body.userId;
+      // console.log(userId)
+      const userId = req.user._id; 
+      const user = await UserRegistrationModel.findById(userId);
+      console.log(user._id)
+      if (user) {
+        user.studentProfile = studentProfile._id; // Set the studentProfile field in the user document
+        await user.save();
+      }
+
+      // Make a relation to a job post
+      const applicant = await JobPostModel.findById(userId);
+      console.log(userId)
+      if(applicant) {
+        applicant.stuProfile = studentProfile._id;
+        await applicant.save();
+      }
       res.json(studentProfile);
     } catch (err) {
       console.log("Error in student profile registration", err);
@@ -198,17 +281,23 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
     }
   
     catch(error) {
-      res.status(500).json({error: "Internal error in student profile fetching data"})
+      res.status(A500).json({error: "Internal error in student profile fetching data"})
     }
   })
   
   // Fetch company data by ID
-  app.get("/get-students/:studentId", async(req, res) => {
+  app.get("/get-studentsDetail", async(req, res) => {
 
   try{
-    const studentId = req.params.studentId;
-    const stuProfiles = await StudentProfileModel.findById(studentId)
-    .populate('Student');
+    const studentId = req.user._id;
+    const stuProfiles = await UserRegistrationModel.findById(studentId);
+
+    const student = new student();
+    student.stuProfiles = studentId;
+    await student.save();
+
+    stuProfiles.student.push(student._id);
+    await stuProfiles.save();
 
     if(!stuProfiles) {
       res.status(400).json({error: "Internal server error for specific student data fetching"})
@@ -223,7 +312,7 @@ app.post("/stuprofile", upload.single('resume'), async (req, res) => {
 
 // ******************Job Post Form*****************************
 
-app.post('/post-job', async (req, res) => {
+app.post('/post-job',authenticate, async (req, res) => {
     try {
       const newJobPost = {
         JobTitle: req.body.JobTitle,
@@ -241,6 +330,14 @@ app.post('/post-job', async (req, res) => {
   
       const jobPost = await JobPostModel.create(newJobPost);
       console.log('Job Posted Successfully', jobPost);
+
+      const userId = req.user._id; 
+      const user = await UserRegistrationModel.findById(userId);
+      console.log(user._id)
+      if (user) {
+        user.jobPost = jobPost._id; // Set the post field in the user document
+        await user.save();
+      }
       res.json(jobPost);
     } catch (err) {
       console.error('Error in Job Posting:', err);
@@ -276,5 +373,197 @@ app.delete("/delete-job/:jobId", async(req, res) => {
     res.status(500).json({err:"Internal server error for job delete"})
   }
 });
+
+
+// *************Login Form****************//
+app.post('/login', async (req, res) => {
+  try {
+    const LoginID = req.body.LoginID;
+    const Password = req.body.Password;
+    // console.log(req.body);
+
+    let user = ''; // Initialize user as null
+
+    user = await UserRegistrationModel.findOne({ LoginID: LoginID });
+
+    if (user) {
+      // console.log('User found:', user);
+      const isMatch = await bcryptjs.compare(Password, user.Password);
+      console.log('isMatch:', isMatch);
+
+      if (isMatch) {
+        const token = await user.generateToken();
+      
+        // console.log('Generated token:', token);
+        // console.log('User Object:', user); // Log the user object here to see if _id is present
+      
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 18000000),
+        });
+      
+        res.json({ Role: user.Role, token: token, Id: user._id });
+      }
+      }} catch (error) {
+    console.error(error);
+    res.status(400).send("Invalid Credentials");
+  }}
+);
+
+// *********Logout***********
+app.get('/logout', (req, res) => {
+  // Clear the JWT cookie by setting its expiration to the past
+  res.clearCookie('jwt', { path: '/' });
+  
+
+  res.status(200).send('User successfully logged out');
+});
+
+
+
+// ********************Admin panel**********************
+app.get('/userData', authenticate, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized user' });
+    }
+    const userId = req.user._id; // Use req.user._id to get the user's ID
+
+    const user = await UserRegistrationModel.findById(userId).select("-Password -ConfirmPassword");
+    // res.send(user);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    console.log(user)
+    // Assuming 'user' contains the user data you want to send back
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Internal server error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// ********************Student profile**********************
+app.get('/student-profile/:studentId', authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized user' });
+    }
+    const userId = req.user._id; // Use req.user._id to get the user's ID
+
+    const user = await UserRegistrationModel.findById(studentId).populate({
+      path: 'studentProfile',
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    console.log(user)
+    const studentProfile = user.studentProfile;
+
+    // Send the student profile data as JSON response
+    res.status(200).json(studentProfile);
+  } catch (error) {
+    console.error('Internal server error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+// ********************Specific company job posts**********************
+
+
+app.get('/jobPost/:companyId', authenticate, async (req, res) => {
+  try {
+    const companyId = req.params.companyId;
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized user' });
+    }
+
+    const user = await UserRegistrationModel.findById(companyId).populate('jobPost'); // Assuming you have a 'jobPosts' field in your user schema
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const jobPost = user.jobPost; // Assuming 'jobPosts' is the field where you store job posts related to the user
+
+    // Send the job posts as a JSON response
+    res.status(200).json(jobPost);
+  } catch (error) {
+    console.error('Internal server error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+// Change Password
+app.post('/change-password', authenticate, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
+    console.log('Received request body:', req.body);
+
+    // Find the user by their ID
+    const user = await UserRegistrationModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify old password and update the new password
+    const passwordMatch = await bcryptjs.compare(oldPassword, user.Password);
+
+    console.log('isMatch:', passwordMatch);
+    if (!passwordMatch) {
+      return res.status(400).json({ message: 'Old password is incorrect' });
+    }
+
+    if (typeof newPassword !== 'string' || newPassword.length === 0) {
+      return res.status(400).json({ message: 'New password is invalid' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    // Update the user's password with the hashed password
+    user.Password = hashedPassword;
+    await user.save();
+
+    console.log('Password updated successfully');
+    res.json({ message: 'Password is successfully updated' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// **********Apply for job**************
+app.post('/student-panel',authenticate, async(res, req) => {
+  try {
+    
+    const postId = req.user._id;
+    const { studentProfileId } = req.body;
+  
+    const post = await JobPostModel.findById(postId);
+    if(!post){
+      return res.status(404).json({error: "No post Found"})
+    }
+  
+    post.applicants.push(studentProfileId);
+    await post.save();
+    res.status(201).json({ message: "Application submitted successfully" });
+
+  } catch (error) {
+    console.error("Error submitting job application:", error);
+      return res.status(500).json({error: "Internal server error"})
+  }
+})
+
+
 
 app.listen(port, () => { console.log(`Server started on port ${port} http://localhost:4000`); });

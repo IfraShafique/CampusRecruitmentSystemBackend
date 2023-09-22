@@ -2,13 +2,17 @@ const mongoose = require('mongoose');
 
 const JobPostSchema = new mongoose.Schema({
     JobTitle: String,
-    Company: String,
+    CompanyName: String,
     JobType: String,
     Location: String,
     Salary: String,
     SkillsRequirement: String,
     JobResponsibilities: String,
     JobDescription: String,
+    applicants: [{
+        type: mongoose.Schema.ObjectId,
+        ref: 'StudentProfile', 
+    }]
     
 });
 

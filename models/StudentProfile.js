@@ -1,19 +1,24 @@
 const mongoose = require('mongoose');
 
-
+ 
 const StudentProfileSchema = new mongoose.Schema({
-  Name: String,
-  ContactNo: String,
-  Address: String,
-  Department: String,
-  CurrentSemester: String,
-  CGPA: String,
-  Skills: String,
-  resumePath: String,
-  studentRegistration: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Student',
+  Name: {
+    type: String,
+    require: "Name is required"
+
   },
+  ContactNo: {type: String, require: "Contact No is Required"},
+  Address:{type: String, require:"Address is required"},
+  Department: {type: String, require: "Department is require"},
+  CurrentSemester: {type:String, require: "Enter your current semester"},
+  CGPA: {type: String, require: "Enter your CGPA"},
+  Skills: {type: String, require: "Skills required"},
+  resumePath: {type: String, require: true},
+  // studentRegistration: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User',
+  //   default: [],
+  // },
 }); 
 
 const StudentProfileModel = mongoose.model("StudentProfile", StudentProfileSchema);
