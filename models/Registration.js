@@ -30,15 +30,15 @@ const UserRegistrationSchema = new mongoose.Schema({
     }]
 });
 
-UserRegistrationSchema.pre('save', async function(next){
-  if(this.isModified('Password')){
-    this.Password = bcryptjs.hashSync(this.Password, 10);
-    if(this.isModified('ConfirmPassword')){
-      this.ConfirmPassword = bcryptjs.hashSync(this.ConfirmPassword, 10);
-    }
-  }
-  next();
-}); 
+// UserRegistrationSchema.pre('save', async function(next){
+//   if(this.isModified('Password')){
+//     this.Password = bcryptjs.hashSync(this.Password, 10);
+//     if(this.isModified('ConfirmPassword')){
+//       this.ConfirmPassword = bcryptjs.hashSync(this.ConfirmPassword, 10);
+//     }
+//   }
+//   next();
+// }); 
 
 // Generate token to verify user
 UserRegistrationSchema.methods.generateToken = async function () {

@@ -84,7 +84,7 @@ const checkUserRole = (role) => {
 // *************** Company Registration Form **********************
 // app.use('/company', companyRoutes);
 // route company
-app.post("/company", async(req, res) => {
+app.post(process.env.COMPANY_URI, async(req, res) => {
     try{
         console.log('Received data:', req.body);
         const company = await ComRegistrationModel.create(req.body)
@@ -98,7 +98,7 @@ app.post("/company", async(req, res) => {
     })
 
     // Company panel by id
-    app.get("/company-panel/:id", async (req, res) => {
+    app.get(process.env.COMPANY_BY_ID, async (req, res) => {
       const id = req.params.id;
       console.log("User ID from route parameters:", id);
       
@@ -119,11 +119,14 @@ app.post("/company", async(req, res) => {
     
 
     // Get Data from Company API
-  app.get("/get-companies", async(req, res) => {
+  app.get(process.env.GET_COMPANIES, async(req, res) => {
     try{
       const companies = await UserRegistrationModel.find({Role: "company"});
+
+      const totalCompanies = companies.length;
   
-      res.json({status: "success", data: companies});
+      res.json({status: "success", data: companies, companies: totalCompanies});
+      console.log(totalCompanies)
     }
 
     catch (error) {
@@ -133,7 +136,7 @@ app.post("/company", async(req, res) => {
   })
 
   // Fetch data by ID
-  app.get('/get-companies/:companyId', async (req, res) => {
+  app.get(process.env.GET_COMPANIES_BY_ID, async (req, res) => {
     try {
       const companyId = req.params.companyId;
       const company = await UserRegistrationModel.findById(companyId);
@@ -150,7 +153,7 @@ app.post("/company", async(req, res) => {
   });
   
   // Delete company Data
-  app.delete("/delete-company/:companyId", async(req, res) => {
+  app.delete(process.env.DELETE_COMPANIES_BY_ID, async(req, res) => {
     try{
       const companyId = req.params.companyId;
   
@@ -167,7 +170,7 @@ app.post("/company", async(req, res) => {
 
 
 // ****************** Student Registration Form *************************
-app.post("/registration", async (req, res) => {
+app.post(process.env.REGISTRATION, async (req, res) => {
     try {
       const registration = {
         LoginID: req.body.LoginID,
@@ -196,17 +199,19 @@ app.post("/registration", async (req, res) => {
     }
   });
 
-  app.post('/registration-get' , async(req, res) => {
+  app.post(process.env.GET_REGISTRATION , async(req, res) => {
     const getUserProfile = await UserRegistrationModel.find({_id:req.body._id}).populate('studentProfile')
       res.json(getUserProfile)
   })
   
 // Fetch Student Data
-app.get("/get-students", async(req, res) => {
+app.get(process.env.GET_STUDENTS, async(req, res) => {
   try{
     const students = await UserRegistrationModel.find({Role: "student"});
 
-    res.json({status: "success", data: students});
+    const totalStudetn = students.length;
+
+    res.json({status: "success", data: students, students: totalStudetn});
   }
 
   catch(error) {
@@ -218,7 +223,7 @@ app.get("/get-students", async(req, res) => {
 
 // ***************** Student Profile **********************
 
-app.post("/stuprofile",authenticate, upload.single('resume'), async (req, res) => {
+app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), async (req, res) => {
     try {
       const resumeUrl = req.file.path; // Access the uploaded file via req.file
   
@@ -273,7 +278,7 @@ app.post("/stuprofile",authenticate, upload.single('resume'), async (req, res) =
     }
   });
 
-  app.get("/get-studentProfileData", async (req, res) => {
+  app.get(process.env.GET_STUDENT_DATA, async (req, res) => {
 
     try{
       const stuProfiles = await StudentProfileModel.find();
@@ -286,7 +291,7 @@ app.post("/stuprofile",authenticate, upload.single('resume'), async (req, res) =
   })
   
   // Fetch company data by ID
-  app.get("/get-studentsDetail", async(req, res) => {
+  app.get(process.env.SPECIFIC_STUDENT_DETAIL, async(req, res) => {
 
   try{
     const studentId = req.user._id;
@@ -312,7 +317,7 @@ app.post("/stuprofile",authenticate, upload.single('resume'), async (req, res) =
 
 // ******************Job Post Form*****************************
 
-app.post('/post-job',authenticate, async (req, res) => {
+app.post(process.env.POST_JOB,authenticate, async (req, res) => {
     try {
       const newJobPost = {
         JobTitle: req.body.JobTitle,
@@ -338,6 +343,12 @@ app.post('/post-job',authenticate, async (req, res) => {
         user.jobPost = jobPost._id; // Set the post field in the user document
         await user.save();
       }
+      const users = await StudentProfileModel.findById(userId);
+      console.log(user._id)
+      if (users) {
+        users.jobApplied = jobApplied._id; // Set the post field in the user document
+        await users.save();
+      }
       res.json(jobPost);
     } catch (err) {
       console.error('Error in Job Posting:', err);
@@ -346,11 +357,13 @@ app.post('/post-job',authenticate, async (req, res) => {
   });
   
 
-  app.get("/get-Jobs", async (req, res) => {
+  app.get(process.env.GET_ALL_JOBS, async (req, res) => {
 
   try{
     const posts = await JobPostModel.find();
-    res.json({status: "success", data: posts});
+
+    const totalPosts = posts.length;
+    res.json({status: "success", data: posts, posts: totalPosts});
   }
 
   catch(error) {
@@ -359,7 +372,7 @@ app.post('/post-job',authenticate, async (req, res) => {
 })
 
 // Delete the job vacancy
-app.delete("/delete-job/:jobId", async(req, res) => {
+app.delete(process.env.DELETE_JOB, async(req, res) => {
   try{
     const jobId = req.params.jobId;
 
@@ -374,9 +387,40 @@ app.delete("/delete-job/:jobId", async(req, res) => {
   }
 });
 
+// Delete the job vacancy
+app.put(process.env.EDIT_JOB, async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const { JobTitle, CompanyName, JobType, Location, Salary, SkillsRequirement, JobResponsibilities, JobDescription } = req.body;
+
+    const edit = {};
+    if (JobTitle) { edit.JobTitle = JobTitle };
+    if (CompanyName) { edit.CompanyName = CompanyName };
+    if (JobType) { edit.JobType = JobType };
+    if (Location) { edit.Location = Location };
+    if (Salary) { edit.Salary = Salary };
+    if (SkillsRequirement) { edit.SkillsRequirement = SkillsRequirement };
+    if (JobResponsibilities) { edit.JobResponsibilities = JobResponsibilities };
+    if (JobDescription) { edit.JobDescription = JobDescription };
+
+    const editJob = await JobPostModel.findByIdAndUpdate(jobId,
+      { $set: edit }, { new: true });
+
+    if (!editJob) {
+      return res.status(404).json({ error: "Job not found" });
+    }
+
+    console.log(editJob);
+    res.json(editJob);
+  } catch (err) {
+    console.error("Error editing job:", err);
+    res.status(500).json({ err: "Internal server error for job edit" });
+  }
+});
+
 
 // *************Login Form****************//
-app.post('/login', async (req, res) => {
+app.post(process.env.LOGIN, async (req, res) => {
   try {
     const LoginID = req.body.LoginID;
     const Password = req.body.Password;
@@ -387,15 +431,8 @@ app.post('/login', async (req, res) => {
     user = await UserRegistrationModel.findOne({ LoginID: LoginID });
 
     if (user) {
-      // console.log('User found:', user);
-      const isMatch = await bcryptjs.compare(Password, user.Password);
-      console.log('isMatch:', isMatch);
-
-      if (isMatch) {
+      if (Password === user.Password) {
         const token = await user.generateToken();
-      
-        // console.log('Generated token:', token);
-        // console.log('User Object:', user); // Log the user object here to see if _id is present
       
         res.cookie("jwt", token, {
           httpOnly: true,
@@ -405,14 +442,37 @@ app.post('/login', async (req, res) => {
       
         res.json({ Role: user.Role, token: token, Id: user._id });
       }
-      }} catch (error) {
+    } 
+
+    // if (user) {
+    //   console.log('User found:', user);
+    //   const isMatch = await bcryptjs.compare(Password, user.Password);
+    //   console.log('isMatch:', isMatch);
+      
+
+    //   if (isMatch) {
+    //     const token = await user.generateToken();
+      
+    //     // console.log('Generated token:', token);
+    //     // console.log('User Object:', user); // Log the user object here to see if _id is present
+      
+    //     res.cookie("jwt", token, {
+    //       httpOnly: true,
+    //       secure: true,
+    //       expires: new Date(Date.now() + 18000000),
+    //     });
+      
+    //     res.json({ Role: user.Role, token: token, Id: user._id });
+    //   }
+    //   }
+    } catch (error) {
     console.error(error);
     res.status(400).send("Invalid Credentials");
   }}
 );
 
 // *********Logout***********
-app.get('/logout', (req, res) => {
+app.get(process.env.LOGOUT, (req, res) => {
   // Clear the JWT cookie by setting its expiration to the past
   res.clearCookie('jwt', { path: '/' });
   
@@ -423,7 +483,7 @@ app.get('/logout', (req, res) => {
 
 
 // ********************Admin panel**********************
-app.get('/userData', authenticate, async (req, res) => {
+app.get(process.env.GET_USER_DATA, authenticate, async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized user' });
@@ -446,7 +506,7 @@ app.get('/userData', authenticate, async (req, res) => {
 });
 
 // ********************Student profile**********************
-app.get('/student-profile/:studentId', authenticate, async (req, res) => {
+app.get(process.env.STUDENT_DATA_BY_ID, authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
     if (!req.user) {
@@ -474,7 +534,7 @@ app.get('/student-profile/:studentId', authenticate, async (req, res) => {
 // ********************Specific company job posts**********************
 
 
-app.get('/jobPost/:companyId', authenticate, async (req, res) => {
+app.get(process.env.GET_JOB_POST_BY_ID, authenticate, async (req, res) => {
   try {
     const companyId = req.params.companyId;
     if (!req.user) {
@@ -482,7 +542,7 @@ app.get('/jobPost/:companyId', authenticate, async (req, res) => {
     }
 
     const user = await UserRegistrationModel.findById(companyId).populate('jobPost'); // Assuming you have a 'jobPosts' field in your user schema
-
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -498,15 +558,46 @@ app.get('/jobPost/:companyId', authenticate, async (req, res) => {
 });
 
 
+// get the specific company job posts
+app.get(process.env.TOTAL_POSTS, authenticate, async (req, res) => {
+  try {
+    const totalPosts = await UserRegistrationModel.findById(req.user._id).populate('jobPost');
+    const jobPosts = totalPosts.jobPost;
+    const totalJobPosts = jobPosts.length;
+    res.json({ user: totalJobPosts });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// get the total number of applicants of a specific company
+app.get(process.env.TOTAL_APPLICANT, authenticate, async(req, res) => {
+  try {
+    const totalPosts = await UserRegistrationModel.findById(req.user._id).populate({
+      path: 'jobPost',
+      populate: {
+        path: 'applicants',
+        model: 'StudentProfile',
+      },
+    });
+    const jobPosts = totalPosts.jobPost;
+    let totalJobApplicants = 0;
+    jobPosts.forEach((jobPost) => {
+      totalJobApplicants += jobPost.applicants.length;
+    });
+    console.log(totalJobApplicants)
+    res.json({ user: totalJobApplicants });
+  } catch (error) {
+    res.status(500).json({message: "Internal server error"})
+  }
+})
 
 
-
-// Change Password
-app.post('/change-password', authenticate, async (req, res) => {
+// Company Change Password
+app.post(process.env.COM_CHANGE_PASS, authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
-    console.log('Received request body:', req.body);
 
     // Find the user by their ID
     const user = await UserRegistrationModel.findById(userId);
@@ -516,10 +607,9 @@ app.post('/change-password', authenticate, async (req, res) => {
     }
 
     // Verify old password and update the new password
-    const passwordMatch = await bcryptjs.compare(oldPassword, user.Password);
+    // const passwordMatch = await bcryptjs.compare(oldPassword, user.Password);
 
-    console.log('isMatch:', passwordMatch);
-    if (!passwordMatch) {
+    if (oldPassword !== user.Password) {
       return res.status(400).json({ message: 'Old password is incorrect' });
     }
 
@@ -527,12 +617,16 @@ app.post('/change-password', authenticate, async (req, res) => {
       return res.status(400).json({ message: 'New password is invalid' });
     }
 
-    // Hash the new password
-    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    // Hash the new password using bcrypt
+    // const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    // user.Password = hashedPassword;
 
-    // Update the user's password with the hashed password
-    user.Password = hashedPassword;
+    user.Password = newPassword;
+    // Save the updated user object
     await user.save();
+    // console.log(hashedPassword);
+    // console.log(passwordMatch)
+    console.log("Received request body:", req.body);
 
     console.log('Password updated successfully');
     res.json({ message: 'Password is successfully updated' });
@@ -542,27 +636,136 @@ app.post('/change-password', authenticate, async (req, res) => {
   }
 });
 
-// **********Apply for job**************
-app.post('/student-panel',authenticate, async(res, req) => {
+// Student Change Password
+app.post(process.env.STU_CHANGE_PASS, authenticate, async (req, res) => {
   try {
-    
-    const postId = req.user._id;
-    const { studentProfileId } = req.body;
-  
-    const post = await JobPostModel.findById(postId);
-    if(!post){
-      return res.status(404).json({error: "No post Found"})
-    }
-  
-    post.applicants.push(studentProfileId);
-    await post.save();
-    res.status(201).json({ message: "Application submitted successfully" });
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
 
+    // Find the user by their ID
+    const user = await UserRegistrationModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (oldPassword !== user.Password) {
+      return res.status(400).json({ message: 'Old password is incorrect' });
+    }
+
+    if (typeof newPassword !== 'string' || newPassword.length === 0) {
+      return res.status(400).json({ message: 'New password is invalid' });
+    }
+
+    user.Password = newPassword;
+    // Save the updated user object
+    await user.save();
+    console.log("Received request body:", req.body);
+
+    console.log('Password updated successfully');
+    res.json({ message: 'Password is successfully updated' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Admin Change Password
+app.post(process.env.ADMIN_CHANGE_PASS, authenticate, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
+
+    // Find the user by their ID
+    const user = await UserRegistrationModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (oldPassword !== user.Password) {
+      return res.status(400).json({ message: 'Old password is incorrect' });
+    }
+
+    if (typeof newPassword !== 'string' || newPassword.length === 0) {
+      return res.status(400).json({ message: 'New password is invalid' });
+    }
+
+    user.Password = newPassword;
+    // Save the updated user object
+    await user.save();
+    console.log("Received request body:", req.body);
+
+    console.log('Password updated successfully');
+    res.json({ message: 'Password is successfully updated' });
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+// **********Apply for job**************
+app.post(process.env.APPLY_FOR_JOB, authenticate, async (req, res) => {
+  try {
+    const { studentProfileId, postId } = req.body;
+
+    // Retrieve the job post by postId
+    const post = await JobPostModel.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: "No post found" });
+    }
+
+    // Push the studentProfileId into the applicants array
+    post.applicants.push(studentProfileId);
+    
+    // Save the job post with the updated applicants list
+    await post.save();
+
+    res.status(201).json({ message: "Application submitted successfully" });
   } catch (error) {
     console.error("Error submitting job application:", error);
-      return res.status(500).json({error: "Internal server error"})
+    return res.status(500).json({ error: "Internal server error" });
   }
-})
+});
+
+
+
+// Get Applicant
+app.get(process.env.GET_APPLICANT, authenticate, async (req, res) => {
+  try {
+    const userId = req.user._id; // Get the authenticated user's ID
+
+    // Find the user by ID and populate their job posts with applicants
+    const user = await UserRegistrationModel.findById(userId).populate({
+      path: 'jobPost',
+      populate: {
+        path: 'applicants',
+        model: 'StudentProfile',
+      },
+    });
+
+    console.log(user)
+    // Extract the applicants from the populated user's job posts
+    const applicants = user.jobPost.flatMap((jobPost) => jobPost.applicants);
+
+    // Check if there are any applicants
+    if (applicants.length === 0) {
+      return res.json({ message: 'No applicants found' });
+    }
+    res.json(applicants);
+    console.log(applicants)
+  } catch (error) {
+    console.error('Error fetching applicants:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
 
 
 

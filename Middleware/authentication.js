@@ -29,6 +29,12 @@ const authenticate = async (req, res, next) => {
     req.user = user;
     // console.log("user:", user)
 
+    // Check if the user has a student profile associated with them
+    if (user.studentProfile) {
+      // Set req.studentProfileId to the student profile ID
+      req.studentProfileId = user.studentProfile;
+    }
+    
     // Set req.userRole if needed
     const userRole = verifyToken.Role;
     req.userRole = userRole;

@@ -14,11 +14,11 @@ const StudentProfileSchema = new mongoose.Schema({
   CGPA: {type: String, require: "Enter your CGPA"},
   Skills: {type: String, require: "Skills required"},
   resumePath: {type: String, require: true},
-  // studentRegistration: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User',
-  //   default: [],
-  // },
+  jobApplied: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'JobPost',
+    
+  },
 }); 
 
 const StudentProfileModel = mongoose.model("StudentProfile", StudentProfileSchema);
