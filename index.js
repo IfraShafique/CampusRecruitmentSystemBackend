@@ -153,11 +153,29 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_COMPANIES_BY_ID, async(req, res) => {
+  app.delete(process.env.DELETE_COMPANIES_BY_ID,authenticate, async(req, res) => {
     try{
       const companyId = req.params.companyId;
+      console.log('Deleting company with ID:', companyId);
   
-      const deleteCompany = await ComRegistrationModel.findByIdAndDelete(companyId);
+      const deleteCompany = await UserRegistrationModel.findByIdAndDelete(companyId);
+      if (!deleteCompany) {
+        return res.status(404).json({error: "Job not found"})
+      }
+  
+      res.json({message: "Job deleted successfully"})
+    } catch(err) {
+      res.status(500).json({err:"Internal server error for job delete"})
+    }
+  });
+  
+  // Delete company Data
+  app.delete(process.env.DELETE_STUDENTS_BY_ID,authenticate, async(req, res) => {
+    try{
+      const studentId = req.params.studentId;
+      console.log('Deleting company with ID:', studentId);
+  
+      const deleteCompany = await UserRegistrationModel.findByIdAndDelete(studentId);
       if (!deleteCompany) {
         return res.status(404).json({error: "Job not found"})
       }
@@ -662,6 +680,7 @@ app.post(process.env.STU_CHANGE_PASS, authenticate, async (req, res) => {
     await user.save();
     console.log("Received request body:", req.body);
 
+    console.log(oldPassword, newPassword)
     console.log('Password updated successfully');
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
@@ -764,8 +783,27 @@ app.get(process.env.GET_APPLICANT, authenticate, async (req, res) => {
 });
 
 
+// Refresh Token
+app.post(process.env.REFRESH_TOKEN , (req, res) => {
+  try {
+    // Extract the expired token from the request body
+    const { token } = req.body;
 
+    // Verify the expired token
+    const decoded = jwt.verify(token, secretKey);
 
+    // Generate a new token with an extended expiration
+    const newToken = jwt.sign({ userId: decoded.userId }, secretKey, {
+      expiresIn: '1h', // Adjust the expiration time as needed
+    });
+
+    // Send the new token as a response
+    res.json({ token: newToken });
+  } catch (error) {
+    // Handle token refresh error
+    res.status(401).json({ message: 'Token refresh failed' });
+  }
+});
 
 
 
