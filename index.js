@@ -27,7 +27,7 @@ const port = 4000;
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
 app.use(cookieParser());
-    mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
     console.log('Connected to MongoDB');
@@ -42,9 +42,9 @@ mongoose.connection.on('connected', () => {
 });
 
   cloudinary.config({ 
-    cloud_name: 'dppmgy4cv', 
-    api_key: '938764178552318', 
-    api_secret: 'XIfA1FG9eI9kWSXgxV4IQXEMBXU' 
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.CLOUD_API_KEY, 
+    api_secret: process.env.CLOUD_API_SECRET_KEY 
 });
 
 // Multer and Cloudinary setup
@@ -93,7 +93,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
         }
     catch (err ) {
         console.error("Error:", err);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: err });
         };
     })
 
@@ -113,7 +113,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
         res.json(userData);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({  error: error });
       }
     });
     
@@ -131,7 +131,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
 
     catch (error) {
       console.log("Error in company Fetching Data: ", error);
-      res.status(500).json({error: "Internal error for fetching company data"})
+      res.status(500).json({ error: error})
     };
   })
 
@@ -148,7 +148,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
       res.json({ status: 'success', data: company });
     } catch (error) {
       console.error('Error fetching company data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({  error: error});
     } 
   });
   
@@ -165,7 +165,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   
       res.json({message: "Job deleted successfully"})
     } catch(err) {
-      res.status(500).json({err:"Internal server error for job delete"})
+      res.status(500).json({ error: err})
     }
   });
   
@@ -182,7 +182,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   
       res.json({message: "Job deleted successfully"})
     } catch(err) {
-      res.status(500).json({err:"Internal server error for job delete"})
+      res.status(500).json({ error: err})
     }
   });
 
@@ -213,7 +213,7 @@ app.post(process.env.REGISTRATION, async (req, res) => {
       
     } catch (err) {
       console.log("Error in Registration:", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({  error: err});
     }
   });
 
@@ -233,7 +233,7 @@ app.get(process.env.GET_STUDENTS, async(req, res) => {
   }
 
   catch(error) {
-    res.status(500).json({error: "Internal error in student fetching data"})
+    res.status(500).json({ error: error})
   }
 });
 
@@ -291,7 +291,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
     } catch (err) {
       console.log("Error in student profile registration", err);
       res.status(500).json({
-        error: "Internal server Error"
+        error: err
       });
     }
   });
@@ -304,7 +304,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
     }
   
     catch(error) {
-      res.status(A500).json({error: "Internal error in student profile fetching data"})
+      res.status(A500).json({ error: error})
     }
   })
   
@@ -329,7 +329,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
   }
 
   catch(error) {
-    res.status(500).json({error: "Internal error in student fetching data"})
+    res.status(500).json({ error: error})
   }
 });
 
@@ -370,7 +370,7 @@ app.post(process.env.POST_JOB,authenticate, async (req, res) => {
       res.json(jobPost);
     } catch (err) {
       console.error('Error in Job Posting:', err);
-      res.status(500).json({ error: 'Internal server error in posting a job' });
+      res.status(500).json({  error: err });
     }
   });
   
@@ -401,7 +401,7 @@ app.delete(process.env.DELETE_JOB, async(req, res) => {
 
     res.json({message: "Job deleted successfully"})
   } catch(err) {
-    res.status(500).json({err:"Internal server error for job delete"})
+    res.status(500).json({ error: err})
   }
 });
 
@@ -432,7 +432,7 @@ app.put(process.env.EDIT_JOB, async (req, res) => {
     res.json(editJob);
   } catch (err) {
     console.error("Error editing job:", err);
-    res.status(500).json({ err: "Internal server error for job edit" });
+    res.status(500).json({  error: err });
   }
 });
 
@@ -485,7 +485,7 @@ app.post(process.env.LOGIN, async (req, res) => {
     //   }
     } catch (error) {
     console.error(error);
-    res.status(400).send("Invalid Credentials");
+    res.status(400).send(error);
   }}
 );
 
@@ -519,7 +519,7 @@ app.get(process.env.GET_USER_DATA, authenticate, async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({  error: error });
   }
 });
 
@@ -546,7 +546,7 @@ app.get(process.env.STUDENT_DATA_BY_ID, authenticate, async (req, res) => {
     res.status(200).json(studentProfile);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({  error: error });
   }
 });
 // ********************Specific company job posts**********************
@@ -571,7 +571,7 @@ app.get(process.env.GET_JOB_POST_BY_ID, authenticate, async (req, res) => {
     res.status(200).json(jobPost);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ error: error });
   }
 });
 
@@ -584,7 +584,7 @@ app.get(process.env.TOTAL_POSTS, authenticate, async (req, res) => {
     const totalJobPosts = jobPosts.length;
     res.json({ user: totalJobPosts });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({  error: error });
   }
 });
 
@@ -606,7 +606,7 @@ app.get(process.env.TOTAL_APPLICANT, authenticate, async(req, res) => {
     console.log(totalJobApplicants)
     res.json({ user: totalJobApplicants });
   } catch (error) {
-    res.status(500).json({message: "Internal server error"})
+    res.status(500).json({ error: error})
   }
 })
 
@@ -650,7 +650,7 @@ app.post(process.env.COM_CHANGE_PASS, authenticate, async (req, res) => {
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({  error: error });
   }
 });
 
@@ -685,7 +685,7 @@ app.post(process.env.STU_CHANGE_PASS, authenticate, async (req, res) => {
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ error: error});
   }
 });
 
@@ -719,7 +719,7 @@ app.post(process.env.ADMIN_CHANGE_PASS, authenticate, async (req, res) => {
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({  error: error });
   }
 });
 
@@ -746,7 +746,7 @@ app.post(process.env.APPLY_FOR_JOB, authenticate, async (req, res) => {
     res.status(201).json({ message: "Application submitted successfully" });
   } catch (error) {
     console.error("Error submitting job application:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({  error: error});
   }
 });
 
@@ -778,7 +778,7 @@ app.get(process.env.GET_APPLICANT, authenticate, async (req, res) => {
     console.log(applicants)
   } catch (error) {
     console.error('Error fetching applicants:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({  error: error });
   }
 });
 
@@ -801,7 +801,7 @@ app.post(process.env.REFRESH_TOKEN , (req, res) => {
     res.json({ token: newToken });
   } catch (error) {
     // Handle token refresh error
-    res.status(401).json({ message: 'Token refresh failed' });
+    res.status(401).json({  error: error });
   }
 });
 
