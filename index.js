@@ -16,7 +16,11 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
-app.use(cors())
+app.use(cors({
+  origin: ["https://campus-recruitment-system-delta.vercel.app"],
+  method: ["GET","POST"],
+  credentials:true,
+}))
 const port = 4000;
 
 // These method is used to get data from frontend
