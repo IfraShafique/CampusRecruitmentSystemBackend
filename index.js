@@ -18,7 +18,7 @@ require('dotenv').config();
 const app = express();
 app.use(cors({
   origin: ["https://campus-recruitment-system-delta.vercel.app"],
-  method: ["GET","POST"],
+  method: ["GET","HEAD","PUT","PATCH","POST","DELETE"],
   credentials:true,
 }))
 const port = 4000;
