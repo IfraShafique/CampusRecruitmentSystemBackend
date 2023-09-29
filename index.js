@@ -153,7 +153,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_COMPANIES_BY_ID, async(req, res) => {
+  app.delete(process.env.DELETE_COMPANIES_BY_ID,authenticate, async(req, res) => {
     try{
       const companyId = req.params.companyId;
       console.log('Deleting company with ID:', companyId);
@@ -170,7 +170,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_STUDENTS_BY_ID, async(req, res) => {
+  app.delete(process.env.DELETE_STUDENTS_BY_ID, authenticate, async(req, res) => {
     try{
       const studentId = req.params.studentId;
       console.log('Deleting company with ID:', studentId);
