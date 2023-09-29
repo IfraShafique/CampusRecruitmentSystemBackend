@@ -23,7 +23,7 @@ const port = 4000;
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
 app.use(cookieParser());
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect('mongodb+srv://ifrashafique123:cWD6U8P6zgLV6f67@registration.rk6wxdz.mongodb.net/?retryWrites=true&w=majority');
 
 mongoose.connection.on('connected', () => {
     console.log('Connected to MongoDB');
