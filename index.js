@@ -27,7 +27,7 @@ app.use(authenticate);
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
 app.use(cookieParser());
-mongoose.connect('mongodb+srv://ifrashafique123:cWD6U8P6zgLV6f67@registration.rk6wxdz.mongodb.net/?retryWrites=true&w=majority');
+mongoose.connect('process.env.MONGODB_URI');
 
 mongoose.connection.on('connected', () => {
     console.log('Connected to MongoDB');
