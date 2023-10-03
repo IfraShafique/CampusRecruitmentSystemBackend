@@ -17,13 +17,13 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: ["http://localhost:3000"],
-  method: ["GET","POST"],
+  origin: ["https://campus-recruitment-system-delta.vercel.app"],
+  method: ["GET","HEAD","PUT","PATCH","POST","DELETE"],
   credentials:true,
 }))
 // app.use(cors())
 const port = 4000;
-
+app.use(authenticate);
 // These method is used to get data from frontend
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
@@ -171,7 +171,7 @@ app.post('/company', async(req, res) => {
   });
   
   // Delete company Data
-  app.delete('/delete-student/:studentId',authenticate, async(req, res) => {
+  app.delete(process.env.DELETE_STUDENTS_BY_ID,authenticate, async(req, res) => {
     try{
       const studentId = req.params.studentId;
       console.log('Deleting company with ID:', studentId);
@@ -441,54 +441,29 @@ app.put('/edit-job/:jobId', async (req, res) => {
 // *************Login Form****************//
 app.post('/login', async (req, res) => {
   try {
-    const LoginID = req.body.LoginID;
-    const Password = req.body.Password;
-    // console.log(req.body);
+    const { LoginID, Password } = req.body;
 
-    let user = ''; // Initialize user as null
+    const user = await UserRegistrationModel.findOne({ LoginID: LoginID });
 
-    user = await UserRegistrationModel.findOne({ LoginID: LoginID });
+    if (!user || user.Password !== Password) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
-    if (user) {
-      if (Password === user.Password) {
-        const token = await user.generateToken();
-      
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          secure: true,
-          expires: new Date(Date.now() + 18000000),
-        });
-      
-        res.json({ Role: user.Role, token: token, Id: user._id });
-      }
-    } 
+    const token = await user.generateToken();
 
-    // if (user) {
-    //   console.log('User found:', user);
-    //   const isMatch = await bcryptjs.compare(Password, user.Password);
-    //   console.log('isMatch:', isMatch);
-      
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: true,
+      expires: new Date(Date.now() + 18000000),
+    });
 
-    //   if (isMatch) {
-    //     const token = await user.generateToken();
-      
-    //     // console.log('Generated token:', token);
-    //     // console.log('User Object:', user); // Log the user object here to see if _id is present
-      
-    //     res.cookie("jwt", token, {
-    //       httpOnly: true,
-    //       secure: true,
-    //       expires: new Date(Date.now() + 18000000),
-    //     });
-      
-    //     res.json({ Role: user.Role, token: token, Id: user._id });
-    //   }
-    //   }
-    } catch (error) {
-    console.error(error);
-    res.status(400).send(error);
-  }}
-);
+    res.json({ Role: user.Role, token: token, Id: user._id });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 // *********Logout***********
 app.get('/logout', (req, res) => {
