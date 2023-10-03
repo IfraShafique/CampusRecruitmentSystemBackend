@@ -70,7 +70,6 @@ const upload = multer({
 });
  // Create an upload middleware
 
-//  **********Check The Role*************
 const checkUserRole = (role) => {
   return (req, res, next) => {
     // Assuming the user's role is stored in req.userRole
@@ -805,7 +804,5 @@ app.post('/refreshToken', (req, res) => {
     res.status(401).json({  error: error });
   }
 });
-
-
 
 app.listen(port, () => { console.log(`Server started on port ${port} http://localhost:4000`); });
