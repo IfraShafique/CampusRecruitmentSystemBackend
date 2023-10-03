@@ -1,6 +1,5 @@
 
 
-
 const jwt = require('jsonwebtoken');
 const UserRegistrationModel = require('../models/Registration');
 
