@@ -17,8 +17,8 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: ["https://campus-recruitment-system-delta.vercel.app"],
-  method: ["GET","HEAD","PUT","PATCH","POST","DELETE"],
+  origin: ["http://localhost:3000"],
+  method: ["GET","POST","DELETE"],
   credentials:true,
 }))
 // app.use(cors())
@@ -171,7 +171,7 @@ app.post('/company', async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_STUDENTS_BY_ID,authenticate, async(req, res) => {
+  app.delete('/delete-student/:studentId',authenticate, async(req, res) => {
     try{
       const studentId = req.params.studentId;
       console.log('Deleting company with ID:', studentId);
@@ -441,29 +441,54 @@ app.put('/edit-job/:jobId', async (req, res) => {
 // *************Login Form****************//
 app.post('/login', async (req, res) => {
   try {
-    const { LoginID, Password } = req.body;
+    const LoginID = req.body.LoginID;
+    const Password = req.body.Password;
+    // console.log(req.body);
 
-    const user = await UserRegistrationModel.findOne({ LoginID: LoginID });
+    let user = ''; // Initialize user as null
 
-    if (!user || user.Password !== Password) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    user = await UserRegistrationModel.findOne({ LoginID: LoginID });
 
-    const token = await user.generateToken();
+    if (user) {
+      if (Password === user.Password) {
+        const token = await user.generateToken();
+      
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 18000000),
+        });
+      
+        res.json({ Role: user.Role, token: token, Id: user._id });
+      }
+    } 
 
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: true,
-      expires: new Date(Date.now() + 18000000),
-    });
+    // if (user) {
+    //   console.log('User found:', user);
+    //   const isMatch = await bcryptjs.compare(Password, user.Password);
+    //   console.log('isMatch:', isMatch);
+      
 
-    res.json({ Role: user.Role, token: token, Id: user._id });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
+    //   if (isMatch) {
+    //     const token = await user.generateToken();
+      
+    //     // console.log('Generated token:', token);
+    //     // console.log('User Object:', user); // Log the user object here to see if _id is present
+      
+    //     res.cookie("jwt", token, {
+    //       httpOnly: true,
+    //       secure: true,
+    //       expires: new Date(Date.now() + 18000000),
+    //     });
+      
+    //     res.json({ Role: user.Role, token: token, Id: user._id });
+    //   }
+    //   }
+    } catch (error) {
+    console.error(error);
+    res.status(400).send(error);
+  }}
+);
 
 // *********Logout***********
 app.get('/logout', (req, res) => {
