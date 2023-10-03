@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const UserRegistrationModel = require('../models/Registration');
 
 const authenticate = async (req, res, next) => {
+  // console.log('cookies', req)
   const cookies = req.cookies;
   console.log("cookies", cookies);
 
@@ -16,10 +17,10 @@ const authenticate = async (req, res, next) => {
   try {
     const verifyToken = jwt.verify(token, process.env.SECRET_KEY);
     console.log("Verification successful", verifyToken);
-    if (verifyToken.exp < Date.now()) {
-    // Token has expired
-    return res.status(401).json({ message: 'Token has expired' });
-  }
+  //   if (verifyToken.exp < Date.now()) {
+  //   // Token has expired
+  //   return res.status(401).json({ message: 'Token has expired' });
+  // }
 
     // Fetch the user from the database using the user ID in the token
     const user = await UserRegistrationModel.findById(verifyToken._id);

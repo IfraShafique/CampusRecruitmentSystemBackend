@@ -23,7 +23,7 @@ app.use(cors({
 }))
 // app.use(cors())
 const port = 4000;
-app.use(authenticate);
+// app.use(authenticate);
 // These method is used to get data from frontend
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
@@ -439,15 +439,17 @@ app.put('/edit-job/:jobId', async (req, res) => {
 
 // *************Login Form****************//
 app.post('/login', async (req, res) => {
-  try {
+  try { 
+    console.log('check login');
     const LoginID = req.body.LoginID;
     const Password = req.body.Password;
     // console.log(req.body);
 
-    let user = ''; // Initialize user as null
+    // let user = ''; // Initialize user as null
 
-    user = await UserRegistrationModel.findOne({ LoginID: LoginID });
-
+    const user = await UserRegistrationModel.findOne({ LoginID: LoginID });
+    // console.log('user', user)
+    if (!user) res.status(404).send({message: 'user not found'})
     if (user) {
       if (Password === user.Password) {
         const token = await user.generateToken();
@@ -455,7 +457,7 @@ app.post('/login', async (req, res) => {
         res.cookie("jwt", token, {
           httpOnly: true,
           secure: true,
-          expires: new Date(Date.now() + 18000000),
+          // expires: new Date(Date.now() + 18000000),
         });
       
         res.json({ Role: user.Role, token: token, Id: user._id });

@@ -10,14 +10,14 @@ const UserRegistrationSchema = new mongoose.Schema({
     Password:{type: String, required: true},
     ConfirmPassword: {type: String, required: true},
     Role: {type:String, required: true},
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true,
-        }
-      } 
-    ],
+    // tokens: [
+    //   {
+    //     token: {
+    //       type: String,
+    //       required: true,
+    //     }
+    //   } 
+    // ],
     studentProfile: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'StudentProfile', 
@@ -38,8 +38,8 @@ UserRegistrationSchema.methods.generateToken = async function () {
       let generatedToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY, {
         expiresIn: '1d',
       });
-      this.tokens = this.tokens.concat({ token: generatedToken });
-      await this.save();
+      // this.tokens = this.tokens.concat({ token: generatedToken });
+      // await this.save();
       return generatedToken;
     } catch (error) {
       // Check if the error is a VersionError and there are retries left
