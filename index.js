@@ -69,7 +69,6 @@ const upload = multer({
 });
  // Create an upload middleware
 
-//  **********Check The Role*************
 const checkUserRole = (role) => {
   return (req, res, next) => {
     // Assuming the user's role is stored in req.userRole
@@ -84,7 +83,7 @@ const checkUserRole = (role) => {
 // *************** Company Registration Form **********************
 // app.use('/company', companyRoutes);
 // route company
-app.post(process.env.COMPANY_URI, async(req, res) => {
+app.post('/company', async(req, res) => {
     try{
         console.log('Received data:', req.body);
         const company = await ComRegistrationModel.create(req.body)
@@ -98,7 +97,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
     })
 
     // Company panel by id
-    app.get(process.env.COMPANY_BY_ID, async (req, res) => {
+    app.get('/company-panel/:id', async (req, res) => {
       const id = req.params.id;
       console.log("User ID from route parameters:", id);
       
@@ -119,7 +118,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
     
 
     // Get Data from Company API
-  app.get(process.env.GET_COMPANIES, async(req, res) => {
+  app.get('/get-companies', async(req, res) => {
     try{
       const companies = await UserRegistrationModel.find({Role: "company"});
 
@@ -136,7 +135,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   })
 
   // Fetch data by ID
-  app.get(process.env.GET_COMPANIES_BY_ID, async (req, res) => {
+  app.get('/get-companies/:companyId', async (req, res) => {
     try {
       const companyId = req.params.companyId;
       const company = await UserRegistrationModel.findById(companyId);
@@ -153,7 +152,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_COMPANIES_BY_ID,authenticate, async(req, res) => {
+  app.delete('/delete-company/:companyId',authenticate, async(req, res) => {
     try{
       const companyId = req.params.companyId;
       console.log('Deleting company with ID:', companyId);
@@ -170,7 +169,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
   });
   
   // Delete company Data
-  app.delete(process.env.DELETE_STUDENTS_BY_ID, authenticate, async(req, res) => {
+  app.delete('/delete-student/:studentId',authenticate, async(req, res) => {
     try{
       const studentId = req.params.studentId;
       console.log('Deleting company with ID:', studentId);
@@ -188,7 +187,7 @@ app.post(process.env.COMPANY_URI, async(req, res) => {
 
 
 // ****************** Student Registration Form *************************
-app.post(process.env.REGISTRATION, async (req, res) => {
+app.post('/registration', async (req, res) => {
     try {
       const registration = {
         LoginID: req.body.LoginID,
@@ -217,13 +216,13 @@ app.post(process.env.REGISTRATION, async (req, res) => {
     }
   });
 
-  app.post(process.env.GET_REGISTRATION , async(req, res) => {
+  app.post('/registration-get', async(req, res) => {
     const getUserProfile = await UserRegistrationModel.find({_id:req.body._id}).populate('studentProfile')
       res.json(getUserProfile)
   })
   
 // Fetch Student Data
-app.get(process.env.GET_STUDENTS, async(req, res) => {
+app.get('/get-students', async(req, res) => {
   try{
     const students = await UserRegistrationModel.find({Role: "student"});
 
@@ -241,7 +240,7 @@ app.get(process.env.GET_STUDENTS, async(req, res) => {
 
 // ***************** Student Profile **********************
 
-app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), async (req, res) => {
+app.post('/stuprofile',authenticate, upload.single('resume'), async (req, res) => {
     try {
       const resumeUrl = req.file.path; // Access the uploaded file via req.file
   
@@ -296,7 +295,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
     }
   });
 
-  app.get(process.env.GET_STUDENT_DATA, async (req, res) => {
+  app.get('/get-studentProfileData', async (req, res) => {
 
     try{
       const stuProfiles = await StudentProfileModel.find();
@@ -309,7 +308,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
   })
   
   // Fetch company data by ID
-  app.get(process.env.SPECIFIC_STUDENT_DETAIL, async(req, res) => {
+  app.get('/get-studentsDetail', async(req, res) => {
 
   try{
     const studentId = req.user._id;
@@ -335,7 +334,7 @@ app.post(process.env.CREATE_STU_PROFILE,authenticate, upload.single('resume'), a
 
 // ******************Job Post Form*****************************
 
-app.post(process.env.POST_JOB,authenticate, async (req, res) => {
+app.post('/post-job',authenticate, async (req, res) => {
     try {
       const newJobPost = {
         JobTitle: req.body.JobTitle,
@@ -375,7 +374,7 @@ app.post(process.env.POST_JOB,authenticate, async (req, res) => {
   });
   
 
-  app.get(process.env.GET_ALL_JOBS, async (req, res) => {
+  app.get('/get-Jobs', async (req, res) => {
 
   try{
     const posts = await JobPostModel.find();
@@ -390,7 +389,7 @@ app.post(process.env.POST_JOB,authenticate, async (req, res) => {
 })
 
 // Delete the job vacancy
-app.delete(process.env.DELETE_JOB, async(req, res) => {
+app.delete('/delete-job/:jobId', async(req, res) => {
   try{
     const jobId = req.params.jobId;
 
@@ -406,7 +405,7 @@ app.delete(process.env.DELETE_JOB, async(req, res) => {
 });
 
 // Delete the job vacancy
-app.put(process.env.EDIT_JOB, async (req, res) => {
+app.put('/edit-job/:jobId', async (req, res) => {
   try {
     const jobId = req.params.jobId;
     const { JobTitle, CompanyName, JobType, Location, Salary, SkillsRequirement, JobResponsibilities, JobDescription } = req.body;
@@ -438,34 +437,59 @@ app.put(process.env.EDIT_JOB, async (req, res) => {
 
 
 // *************Login Form****************//
-app.post(process.env.LOGIN, async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
-    const { LoginID, Password } = req.body;
+    const LoginID = req.body.LoginID;
+    const Password = req.body.Password;
+    // console.log(req.body);
 
-    const user = await UserRegistrationModel.findOne({ LoginID: LoginID });
+    let user = ''; // Initialize user as null
 
-    if (!user || user.Password !== Password) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    user = await UserRegistrationModel.findOne({ LoginID: LoginID });
 
-    const token = await user.generateToken();
+    if (user) {
+      if (Password === user.Password) {
+        const token = await user.generateToken();
+      
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 18000000),
+        });
+      
+        res.json({ Role: user.Role, token: token, Id: user._id });
+      }
+    } 
 
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: true,
-      expires: new Date(Date.now() + 18000000),
-    });
+    // if (user) {
+    //   console.log('User found:', user);
+    //   const isMatch = await bcryptjs.compare(Password, user.Password);
+    //   console.log('isMatch:', isMatch);
+      
 
-    res.json({ Role: user.Role, token: token, Id: user._id });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
+    //   if (isMatch) {
+    //     const token = await user.generateToken();
+      
+    //     // console.log('Generated token:', token);
+    //     // console.log('User Object:', user); // Log the user object here to see if _id is present
+      
+    //     res.cookie("jwt", token, {
+    //       httpOnly: true,
+    //       secure: true,
+    //       expires: new Date(Date.now() + 18000000),
+    //     });
+      
+    //     res.json({ Role: user.Role, token: token, Id: user._id });
+    //   }
+    //   }
+    } catch (error) {
+    console.error(error);
+    res.status(400).send(error);
+  }}
+);
 
 // *********Logout***********
-app.get(process.env.LOGOUT, (req, res) => {
+app.get('/logout', (req, res) => {
   // Clear the JWT cookie by setting its expiration to the past
   res.clearCookie('jwt', { path: '/' });
   
@@ -476,7 +500,7 @@ app.get(process.env.LOGOUT, (req, res) => {
 
 
 // ********************Admin panel**********************
-app.get(process.env.GET_USER_DATA, authenticate, async (req, res) => {
+app.get('/userData', authenticate, async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized user' });
@@ -499,7 +523,7 @@ app.get(process.env.GET_USER_DATA, authenticate, async (req, res) => {
 });
 
 // ********************Student profile**********************
-app.get(process.env.STUDENT_DATA_BY_ID, authenticate, async (req, res) => {
+app.get('/student-profile/:studentId', authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
     if (!req.user) {
@@ -527,7 +551,7 @@ app.get(process.env.STUDENT_DATA_BY_ID, authenticate, async (req, res) => {
 // ********************Specific company job posts**********************
 
 
-app.get(process.env.GET_JOB_POST_BY_ID, authenticate, async (req, res) => {
+app.get('/jobPost/:companyId', authenticate, async (req, res) => {
   try {
     const companyId = req.params.companyId;
     if (!req.user) {
@@ -552,7 +576,7 @@ app.get(process.env.GET_JOB_POST_BY_ID, authenticate, async (req, res) => {
 
 
 // get the specific company job posts
-app.get(process.env.TOTAL_POSTS, authenticate, async (req, res) => {
+app.get('/totalPosts', authenticate, async (req, res) => {
   try {
     const totalPosts = await UserRegistrationModel.findById(req.user._id).populate('jobPost');
     const jobPosts = totalPosts.jobPost;
@@ -564,7 +588,7 @@ app.get(process.env.TOTAL_POSTS, authenticate, async (req, res) => {
 });
 
 // get the total number of applicants of a specific company
-app.get(process.env.TOTAL_APPLICANT, authenticate, async(req, res) => {
+app.get('/totalApplicant', authenticate, async(req, res) => {
   try {
     const totalPosts = await UserRegistrationModel.findById(req.user._id).populate({
       path: 'jobPost',
@@ -587,7 +611,7 @@ app.get(process.env.TOTAL_APPLICANT, authenticate, async(req, res) => {
 
 
 // Company Change Password
-app.post(process.env.COM_CHANGE_PASS, authenticate, async (req, res) => {
+app.post('/change-password', authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
@@ -630,7 +654,7 @@ app.post(process.env.COM_CHANGE_PASS, authenticate, async (req, res) => {
 });
 
 // Student Change Password
-app.post(process.env.STU_CHANGE_PASS, authenticate, async (req, res) => {
+app.post('/stuchangepass', authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
@@ -665,7 +689,7 @@ app.post(process.env.STU_CHANGE_PASS, authenticate, async (req, res) => {
 });
 
 // Admin Change Password
-app.post(process.env.ADMIN_CHANGE_PASS, authenticate, async (req, res) => {
+app.post('/changepass', authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
@@ -701,7 +725,7 @@ app.post(process.env.ADMIN_CHANGE_PASS, authenticate, async (req, res) => {
 
 
 // **********Apply for job**************
-app.post(process.env.APPLY_FOR_JOB, authenticate, async (req, res) => {
+app.post('/student-panel', authenticate, async (req, res) => {
   try {
     const { studentProfileId, postId } = req.body;
 
@@ -728,7 +752,7 @@ app.post(process.env.APPLY_FOR_JOB, authenticate, async (req, res) => {
 
 
 // Get Applicant
-app.get(process.env.GET_APPLICANT, authenticate, async (req, res) => {
+app.get('/get-applicants', authenticate, async (req, res) => {
   try {
     const userId = req.user._id; // Get the authenticated user's ID
 
@@ -759,7 +783,7 @@ app.get(process.env.GET_APPLICANT, authenticate, async (req, res) => {
 
 
 // Refresh Token
-app.post(process.env.REFRESH_TOKEN , (req, res) => {
+app.post('/refreshToken', (req, res) => {
   try {
     // Extract the expired token from the request body
     const { token } = req.body;
@@ -779,7 +803,5 @@ app.post(process.env.REFRESH_TOKEN , (req, res) => {
     res.status(401).json({  error: error });
   }
 });
-
-
 
 app.listen(port, () => { console.log(`Server started on port ${port} http://localhost:4000`); });
