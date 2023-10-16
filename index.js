@@ -504,9 +504,9 @@ app.get('/logout', (req, res) => {
 // ********************Admin panel**********************
 app.get('/userData', authenticate, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized user' });
-    }
+    // if (!req.user) {
+    //   return res.status(401).json({ message: 'Unauthorized user' });
+    // }
     const userId = req.user._id; // Use req.user._id to get the user's ID
 
     const user = await UserRegistrationModel.findById(userId).select("-Password -ConfirmPassword");
