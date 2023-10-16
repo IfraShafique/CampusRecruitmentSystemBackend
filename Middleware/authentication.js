@@ -5,15 +5,16 @@ const UserRegistrationModel = require('../models/Registration');
 
 const authenticate = async (req, res, next) => {
   // console.log('cookies', req)
-  const cookies = req.cookies;
-  console.log("cookies", cookies);
+  // const cookies = req.cookies;
+  // console.log("cookies", cookies);
 
-  const token = cookies.jwt;
-  console.log("token", token);
+  // const token = cookies.jwt;
+  // console.log("token", token);
+  const token = req.header('jwt');
 
-  // if (!token) {
-  //   return res.status(401).json({ message: 'Unauthorized user' });
-  // }
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized user' });
+  }
   try {
     const verifyToken = jwt.verify(token, process.env.SECRET_KEY);
     console.log("Verification successful", verifyToken);
