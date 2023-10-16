@@ -454,12 +454,11 @@ app.post('/login', async (req, res) => {
       if (Password === user.Password) {
         const token = await user.generateToken();
       
-        res.cookie("jwt", token, {
+        res.header("jwt", token, {
           httpOnly: true,
           secure: true,
-          // expires: new Date(Date.now() + 18000000),
+          
         });
-      
         res.json({ Role: user.Role, token: token, Id: user._id });
       }
     } 
