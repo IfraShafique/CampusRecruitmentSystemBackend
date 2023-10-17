@@ -477,7 +477,7 @@ app.post('/login', async (req, res) => {
       
     //     res.cookie("jwt", token, {
     //       httpOnly: true,
-    //       secure: true,
+    //       secure: true, 
     //       expires: new Date(Date.now() + 18000000),
     //     });
       
