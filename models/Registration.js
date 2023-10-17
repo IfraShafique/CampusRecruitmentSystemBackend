@@ -3,12 +3,19 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const UserRegistrationSchema = new mongoose.Schema({
-    LoginID: { type: String, unique: true, required: true}, 
+  date:{
+    type: Date,
+    default: Date.now(),
+  },
+    LoginID: {
+       type: String, 
+       unique: true, 
+       required: true}, 
     Name: {type: String, required: true},
     Email: { type: String, unique: true, required: true},
-    ContactNo: {type: String, required: true},
-    Password:{type: String, required: true},
-    ConfirmPassword: {type: String, required: true},
+    ContactNo: {type: String, required: true, min:11, max:11},
+    Password:{type: String, required: true, min:6, max:15},
+    ConfirmPassword: {type: String, required: true , min:6, max:15},
     Role: {type:String, required: true},
     // tokens: [
     //   {

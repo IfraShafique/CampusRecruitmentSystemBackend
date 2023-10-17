@@ -12,12 +12,14 @@ const JobPostModel = require('./models/JobPost');
 const bcryptjs = require('bcryptjs');
 const authenticate  = require('./Middleware/authentication');
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken')
 
 require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: ["http://localhost:3000"],
+  origin: ["https://campus-recruitment-system-delta.vercel.app"],
+  // origin: ["http://localhost:3000"],
   method: ["GET","POST","DELETE"],
   credentials:true,
 }))
@@ -93,7 +95,7 @@ app.post('/company', async(req, res) => {
         }
     catch (err ) {
         console.error("Error:", err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ error: err.message });
         };
     })
 
@@ -113,7 +115,7 @@ app.post('/company', async(req, res) => {
         res.json(userData);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        res.status(500).json({  error: error });
+        res.status(500).json({  error: error.message });
       }
     });
     
@@ -131,7 +133,7 @@ app.post('/company', async(req, res) => {
 
     catch (error) {
       console.log("Error in company Fetching Data: ", error);
-      res.status(500).json({ error: error})
+      res.status(500).json({ error: error.message})
     };
   })
 
@@ -148,7 +150,7 @@ app.post('/company', async(req, res) => {
       res.json({ status: 'success', data: company });
     } catch (error) {
       console.error('Error fetching company data:', error);
-      res.status(500).json({  error: error});
+      res.status(500).json({  error: error.message});
     } 
   });
   
@@ -165,7 +167,7 @@ app.post('/company', async(req, res) => {
   
       res.json({message: "Job deleted successfully"})
     } catch(err) {
-      res.status(500).json({ error: err})
+      res.status(500).json({ error: err.message})
     }
   });
   
@@ -182,7 +184,7 @@ app.post('/company', async(req, res) => {
   
       res.json({message: "Job deleted successfully"})
     } catch(err) {
-      res.status(500).json({ error: err})
+      res.status(500).json({ error: err.message})
     }
   });
 
@@ -198,7 +200,7 @@ app.post('/registration', async (req, res) => {
         Password: req.body.Password,
         ConfirmPassword: req.body.ConfirmPassword,
         Role: req.body.Role,
-        tokens: req.body.tokens,
+        // tokens: req.body.tokens,
         studentProfile: req.body.studentProfile,
         jobPost: req.body.jobPost,
       };
@@ -217,10 +219,10 @@ app.post('/registration', async (req, res) => {
     }
   });
 
-  app.post('/registration-get', async(req, res) => {
-    const getUserProfile = await UserRegistrationModel.find({_id:req.body._id}).populate('studentProfile')
-      res.json(getUserProfile)
-  })
+  // app.post('/registration-get', async(req, res) => {
+  //   const getUserProfile = await UserRegistrationModel.find({_id:req.body._id}).populate('studentProfile')
+  //     res.json(getUserProfile)
+  // })
   
 // Fetch Student Data
 app.get('/get-students', async(req, res) => {
@@ -233,7 +235,7 @@ app.get('/get-students', async(req, res) => {
   }
 
   catch(error) {
-    res.status(500).json({ error: error})
+    res.status(500).json({ error: error.message})
   }
 });
 
@@ -304,11 +306,11 @@ app.post('/stuprofile',authenticate, upload.single('resume'), async (req, res) =
     }
   
     catch(error) {
-      res.status(A500).json({ error: error})
+      res.status(A500).json({ error: error.message})
     }
   })
   
-  // Fetch company data by ID
+  // Fetch student data by ID
   app.get('/get-studentsDetail', async(req, res) => {
 
   try{
@@ -329,7 +331,7 @@ app.post('/stuprofile',authenticate, upload.single('resume'), async (req, res) =
   }
 
   catch(error) {
-    res.status(500).json({ error: error})
+    res.status(500).json({ error: error.message})
   }
 });
 
@@ -370,7 +372,7 @@ app.post('/post-job',authenticate, async (req, res) => {
       res.json(jobPost);
     } catch (err) {
       console.error('Error in Job Posting:', err);
-      res.status(500).json({  error: err });
+      res.status(500).json({  error: err.message });
     }
   });
   
@@ -401,7 +403,7 @@ app.delete('/delete-job/:jobId', async(req, res) => {
 
     res.json({message: "Job deleted successfully"})
   } catch(err) {
-    res.status(500).json({ error: err})
+    res.status(500).json({ error: err.message})
   }
 });
 
@@ -432,7 +434,7 @@ app.put('/edit-job/:jobId', async (req, res) => {
     res.json(editJob);
   } catch (err) {
     console.error("Error editing job:", err);
-    res.status(500).json({  error: err });
+    res.status(500).json({  error: err.message });
   }
 });
 
@@ -454,11 +456,17 @@ app.post('/login', async (req, res) => {
       if (Password === user.Password) {
         const token = await user.generateToken();
       
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          secure: true,
-          // expires: new Date(Date.now() + 18000000),
-        });
+        // res.header("jwt", token, {
+        //   httpOnly: true,
+        //   secure: true,
+          
+        // });`
+      
+        // res.cookie("jwt", token, {
+        //   httpOnly: true,
+        //   secure: true,
+        //   // expires: new Date(Date.now() + 18000000),
+        // });
       
         res.json({ Role: user.Role, token: token, Id: user._id });
       }
@@ -521,7 +529,7 @@ app.get('/userData', authenticate, async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({  error: error });
+    res.status(500).json({  error: error.message });
   }
 });
 
@@ -548,7 +556,7 @@ app.get('/student-profile/:studentId', authenticate, async (req, res) => {
     res.status(200).json(studentProfile);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({  error: error });
+    res.status(500).json({  error: error.message });
   }
 });
 // ********************Specific company job posts**********************
@@ -573,7 +581,7 @@ app.get('/jobPost/:companyId', authenticate, async (req, res) => {
     res.status(200).json(jobPost);
   } catch (error) {
     console.error('Internal server error:', error);
-    res.status(500).json({ error: error });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -608,7 +616,7 @@ app.get('/totalApplicant', authenticate, async(req, res) => {
     console.log(totalJobApplicants)
     res.json({ user: totalJobApplicants });
   } catch (error) {
-    res.status(500).json({ error: error})
+    res.status(500).json({ error: error.message})
   }
 })
 
@@ -626,9 +634,7 @@ app.post('/change-password', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verify old password and update the new password
-    // const passwordMatch = await bcryptjs.compare(oldPassword, user.Password);
-
+    // Compare old password directly (plaintext comparison)
     if (oldPassword !== user.Password) {
       return res.status(400).json({ message: 'Old password is incorrect' });
     }
@@ -637,24 +643,20 @@ app.post('/change-password', authenticate, async (req, res) => {
       return res.status(400).json({ message: 'New password is invalid' });
     }
 
-    // Hash the new password using bcrypt
-    // const hashedPassword = await bcryptjs.hash(newPassword, 10);
-    // user.Password = hashedPassword;
-
+    // Update the user's password directly
     user.Password = newPassword;
+
     // Save the updated user object
     await user.save();
-    // console.log(hashedPassword);
-    // console.log(passwordMatch)
-    console.log("Received request body:", req.body);
 
     console.log('Password updated successfully');
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({  error: error });
+    res.status(500).json({ error: error.message });
   }
 });
+
 
 // Student Change Password
 app.post('/stuchangepass', authenticate, async (req, res) => {
@@ -687,7 +689,7 @@ app.post('/stuchangepass', authenticate, async (req, res) => {
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({ error: error});
+    res.status(500).json({ error: error.message});
   }
 });
 
@@ -721,7 +723,7 @@ app.post('/changepass', authenticate, async (req, res) => {
     res.json({ message: 'Password is successfully updated' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({  error: error });
+    res.status(500).json({  error: error.message });
   }
 });
 
@@ -748,7 +750,7 @@ app.post('/student-panel', authenticate, async (req, res) => {
     res.status(201).json({ message: "Application submitted successfully" });
   } catch (error) {
     console.error("Error submitting job application:", error);
-    return res.status(500).json({  error: error});
+    return res.status(500).json({  error: error.message});
   }
 });
 
@@ -780,30 +782,35 @@ app.get('/get-applicants', authenticate, async (req, res) => {
     console.log(applicants)
   } catch (error) {
     console.error('Error fetching applicants:', error);
-    res.status(500).json({  error: error });
+    res.status(500).json({  error: error.message });
   }
 });
 
 
 // Refresh Token
-app.post('/refreshToken', (req, res) => {
+app.post('/refreshToken', async(req, res) => {
   try {
-    // Extract the expired token from the request body
-    const { token } = req.body;
+    const { refreshToken } = req.body;
 
-    // Verify the expired token
-    const decoded = jwt.verify(token, secretKey);
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    // Generate a new token with an extended expiration
-    const newToken = jwt.sign({ userId: decoded.userId }, secretKey, {
-      expiresIn: '1h', // Adjust the expiration time as needed
+    // Check if the user with the provided refresh token exists in the database
+    const user = await UserRegistrationModel.findById(decoded._id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Generate a new access token
+    const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '1d', // Access token expiration time (adjust as needed)
     });
 
-    // Send the new token as a response
-    res.json({ token: newToken });
+    // Send the new access token as a response
+    res.json({ accessToken });
   } catch (error) {
-    // Handle token refresh error
-    res.status(401).json({  error: error });
+    console.error('Refresh token error:', error);
+    res.status(401).json({ error: error.message });
   }
 });
 

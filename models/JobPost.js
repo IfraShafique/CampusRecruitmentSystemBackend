@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const JobPostSchema = new mongoose.Schema({
+    date:{
+        type: Date,
+        default: Date.now(),
+      },
     JobTitle: String,
     CompanyName: String,
     JobType: String,
