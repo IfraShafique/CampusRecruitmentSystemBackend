@@ -17,18 +17,18 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 const app = express();
-app.use(cors({
-  origin: ["https://campus-recruitment-system-cy8xkr0j3-ifrashafique.vercel.app"],
-  method: ["GET","POST","DELETE"],
-  credentials:true,
-}))
-
-// const corsOptions ={
-//   origin:'https://campus-recruitment-system-delta.vercel.app', 
-//   credentials:true,            //access-control-allow-credentials:true
+// app.use(cors({
+//   origin: ["https://campus-recruitment-system-cy8xkr0j3-ifrashafique.vercel.app"],
 //   method: ["GET","POST","DELETE"],
-// }
-// app.use(cors(corsOptions));
+//   credentials:true,
+// }))
+
+const corsOptions ={
+  origin:'https://campus-recruitment-system-cy8xkr0j3-ifrashafique.vercel.app', 
+  credentials:true,            //access-control-allow-credentials:true
+  method: ["GET","POST","DELETE"],
+}
+app.use(cors(corsOptions));
 
 // app.use(cors())
 const port = 4000;
