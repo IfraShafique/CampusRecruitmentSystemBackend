@@ -18,7 +18,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: ["https://campus-recruitment-system-delta.vercel.app"],
+  origin: ["https://campus-recruitment-system-cy8xkr0j3-ifrashafique.vercel.app"],
   method: ["GET","POST","DELETE"],
   credentials:true,
 }))
