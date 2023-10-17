@@ -10,7 +10,8 @@ const authenticate = async (req, res, next) => {
 
   // const token = cookies.jwt;
   // console.log("token", token);
-  const token = req.header('jwt');
+  // const token = req.header('jwt');
+  const token = req.header('Authorization').replace('Bearer ', '');
   console.log(token);
   // if (!token) {
   //   return res.status(401).json({ message: 'Unauthorized user' });
