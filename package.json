@@ -1,7 +1,7 @@
 {
   "name": "campus_recruitment_system",
   "version": "1.0.0",
-  "proxy": "https://campus-recruitment-system-cy8xkr0j3-ifrashafique.vercel.app",
+  "proxy": "https://campus-recruitment-system-delta.vercel.app",
   "description": "This system can be used in all placement providing colleges for their campus",
   "main": "index.js",
   "engines": {
