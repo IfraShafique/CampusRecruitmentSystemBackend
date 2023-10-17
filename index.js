@@ -17,11 +17,17 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 const app = express();
-app.use(cors({
-  origin: ["https://campus-recruitment-system-delta.vercel.app"],
+// app.use(cors({
+//   origin: ["https://localhost:3000"],
+//   method: ["GET","POST","DELETE"],
+//   credentials:true,
+// }))
+const corsOptions ={
+  origin:'http://localhost:3000', 
+  credentials:true,            //access-control-allow-credentials:true
   method: ["GET","POST","DELETE"],
-  credentials:true,
-}))
+}
+app.use(cors(corsOptions));
 // app.use(cors())
 const port = 4000;
 // app.use(authenticate);
@@ -455,7 +461,7 @@ app.post('/login', async (req, res) => {
       if (Password === user.Password) {
         const token = await user.generateToken();
       
-<<<<<<< HEAD
+
         // res.header("jwt", token, {
         //   httpOnly: true,
         //   secure: true,
@@ -468,13 +474,12 @@ app.post('/login', async (req, res) => {
         //   // expires: new Date(Date.now() + 18000000),
         // });
       
-=======
+
         res.header("jwt", token, {
           httpOnly: true,
           secure: true,
           
         });
->>>>>>> 952d46051837e4e2cf3a963164e7bbf7364b1af0
         res.json({ Role: user.Role, token: token, Id: user._id });
       }
     } 
