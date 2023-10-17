@@ -18,8 +18,12 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
+<<<<<<< HEAD
   origin: ["https://campus-recruitment-system-delta.vercel.app"],
   // origin: ["http://localhost:3000"],
+=======
+  origin: ["https://campus-recruitment-system-delta.vercel.app/"],
+>>>>>>> 952d46051837e4e2cf3a963164e7bbf7364b1af0
   method: ["GET","POST","DELETE"],
   credentials:true,
 }))
@@ -456,6 +460,7 @@ app.post('/login', async (req, res) => {
       if (Password === user.Password) {
         const token = await user.generateToken();
       
+<<<<<<< HEAD
         // res.header("jwt", token, {
         //   httpOnly: true,
         //   secure: true,
@@ -468,6 +473,13 @@ app.post('/login', async (req, res) => {
         //   // expires: new Date(Date.now() + 18000000),
         // });
       
+=======
+        res.header("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          
+        });
+>>>>>>> 952d46051837e4e2cf3a963164e7bbf7364b1af0
         res.json({ Role: user.Role, token: token, Id: user._id });
       }
     } 
@@ -486,7 +498,7 @@ app.post('/login', async (req, res) => {
       
     //     res.cookie("jwt", token, {
     //       httpOnly: true,
-    //       secure: true,
+    //       secure: true, 
     //       expires: new Date(Date.now() + 18000000),
     //     });
       
@@ -513,9 +525,9 @@ app.get('/logout', (req, res) => {
 // ********************Admin panel**********************
 app.get('/userData', authenticate, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized user' });
-    }
+    // if (!req.user) {
+    //   return res.status(401).json({ message: 'Unauthorized user' });
+    // }
     const userId = req.user._id; // Use req.user._id to get the user's ID
 
     const user = await UserRegistrationModel.findById(userId).select("-Password -ConfirmPassword");

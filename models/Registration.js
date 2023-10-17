@@ -3,7 +3,11 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const UserRegistrationSchema = new mongoose.Schema({
+<<<<<<< HEAD
   date:{
+=======
+     date:{
+>>>>>>> 952d46051837e4e2cf3a963164e7bbf7364b1af0
     type: Date,
     default: Date.now(),
   },
