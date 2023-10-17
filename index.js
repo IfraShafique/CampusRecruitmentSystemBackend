@@ -17,21 +17,15 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 const app = express();
-// app.use(cors({
-//   origin: ["https://localhost:3000"],
-//   method: ["GET","POST","DELETE"],
-//   credentials:true,
-// }))
-const corsOptions ={
-  origin:'http://localhost:3000', 
-  credentials:true,            //access-control-allow-credentials:true
+app.use(cors({
+  origin: ["https://campus-recruitment-system-delta.vercel.app"],
   method: ["GET","POST","DELETE"],
-}
-app.use(cors(corsOptions));
+  credentials:true,
+}))
 // app.use(cors())
 const port = 4000;
 // app.use(authenticate);
-// These method is used to get data from frontend
+// These method is used to get data from frontend 
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
 app.use(cookieParser());
