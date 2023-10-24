@@ -24,8 +24,8 @@ const app = express();
 // }))
 
 const corsOptions ={
-  // origin:'https://campus-recruitment-system-delta.vercel.app', 
-  origin:'*',
+  origin:'https://campus-recruitment-system-delta.vercel.app', 
+  // origin:'*',
   credentials:true,            //access-control-allow-credentials:true
   method: ["GET","POST","DELETE"],
 }
